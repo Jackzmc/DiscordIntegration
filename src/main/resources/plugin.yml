@@ -1,0 +1,6 @@
+name: DiscordIntegration
+version: ${project.version}
+main: me.jackz.discordintegration.DiscordIntegration
+api-version: 1.13
+authors: [Jackzmc]
+description: Control access to a server using discord

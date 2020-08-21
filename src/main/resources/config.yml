@@ -1,0 +1,23 @@
+discord:
+  # Get the bot token from https://discord.com/developers
+  bot_token:
+  # List of channel IDs that can be used to register
+  allow_registration_channels: []
+  # Bot's prefix
+  prefix: !
+
+# Whitelist access to server
+whitelist:
+  # Is enabled?
+  enabled: true
+  # The role IDs that users need to gain access
+  roles: []
+
+# Player count bot status
+botstatus:
+  enabled: true
+  format: "%current%/%max_players%"
+  type: "Watching"
+
+# Version of config, do not change.
+version: 1.0
