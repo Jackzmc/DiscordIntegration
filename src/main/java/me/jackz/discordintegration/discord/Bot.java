@@ -12,6 +12,7 @@ import discord4j.core.object.entity.channel.Channel;
 import discord4j.core.object.entity.channel.GuildChannel;
 import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.core.object.entity.channel.TextChannel;
+import discord4j.rest.json.response.ErrorResponse;
 import me.jackz.discordintegration.DiscordIntegration;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -42,8 +43,12 @@ public class Bot {
                 registerEvents();
 
                 Snowflake channelSnowflake = Snowflake.of(registrationChannels.get(0));
-                GuildChannel firstChannel = (GuildChannel) client.getChannelById(channelSnowflake).subscribe();
-                guild = firstChannel.getGuild().block();
+                GuildChannel firstChannel = (GuildChannel) client.getChannelById(channelSnowflake).block();
+                if(firstChannel != null) {
+                    guild = firstChannel.getGuild().block();
+                }else{
+                    plugin.getLogger().warning("No valid registration channels were provided.");
+                }
             }else{
                 plugin.getLogger().warning("No registration channels were provided.");
             }
