@@ -4,6 +4,8 @@ import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Role;
 import me.jackz.discordintegration.discord.Bot;
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.util.*;
@@ -53,7 +55,11 @@ public class UserReg {
     public boolean isUserAuthorized(UUID uuid) {
         Snowflake user = registeredUsers.get(uuid);
         Member member = bot.getGuild().getMemberById(user).block();
-        if(user != null && member != null) {
+        if(member == null) return false;
+        return isUserAuthorized(member);
+    }
+    public boolean isUserAuthorized(Member member) {
+        if(member != null) {
             for (Snowflake memberRoleID : member.getRoleIds()) {
                 for (Snowflake allowedRoleID : roleList) {
                     if (memberRoleID.equals(allowedRoleID)) {
@@ -63,5 +69,25 @@ public class UserReg {
             }
         }
         return false;
+    }
+    public boolean isUserWhitelisted(Snowflake snowflake) {
+        if(registeredUsers.containsValue(snowflake)) {
+            for (Map.Entry<UUID, Snowflake> entry : registeredUsers.entrySet()) {
+                if(entry.getValue().equals(snowflake)) {
+                    OfflinePlayer player = Bukkit.getOfflinePlayer(entry.getKey());
+                    return plugin.getServer().getWhitelistedPlayers().contains(player);
+                }
+            }
+        }
+        return false;
+    }
+
+    public UUID getMCFromDiscord(Snowflake snowflake) {
+        for (Map.Entry<UUID, Snowflake> entry : registeredUsers.entrySet()) {
+            if(entry.getValue().equals(snowflake)) {
+                return entry.getKey();
+            }
+        }
+        return null;
     }
 }

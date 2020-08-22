@@ -3,18 +3,12 @@ package me.jackz.discordintegration.discord;
 import discord4j.common.util.Snowflake;
 import discord4j.core.DiscordClientBuilder;
 import discord4j.core.GatewayDiscordClient;
+import discord4j.core.event.domain.guild.MemberUpdateEvent;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
-import discord4j.core.event.domain.message.MessageEvent;
 import discord4j.core.object.entity.Guild;
-import discord4j.core.object.entity.Message;
-import discord4j.core.object.entity.channel.Channel;
 import discord4j.core.object.entity.channel.GuildChannel;
-import discord4j.core.object.entity.channel.MessageChannel;
-import discord4j.core.object.entity.channel.TextChannel;
-import discord4j.rest.json.response.ErrorResponse;
 import me.jackz.discordintegration.DiscordIntegration;
-import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.util.ArrayList;
@@ -25,10 +19,15 @@ public class Bot {
     private YamlConfiguration config;
     private GatewayDiscordClient client;
     private MessageHandler messageHandler;
+    private UpdateHandler updateHandler;
 
     public static String PREFIX;
     private List<String> registrationChannels = new ArrayList<>();
     private Guild guild;
+
+    private boolean statusEnabled = true;
+    private String statusFormat;
+    private String statusType;
 
     public Bot(DiscordIntegration plugin) {
         this.plugin = plugin;
@@ -40,6 +39,7 @@ public class Bot {
             if(registrationChannels.size() > 0) {
                 client = DiscordClientBuilder.create(token).build().login().block();
                 messageHandler = new MessageHandler(plugin, this);
+                updateHandler = new UpdateHandler(plugin, this);
                 registerEvents();
 
                 Snowflake channelSnowflake = Snowflake.of(registrationChannels.get(0));
@@ -68,11 +68,21 @@ public class Bot {
             .filter(message -> message.getAuthor().map(user -> !user.isBot()).orElse(false))
             .filter(message -> message.getContent().startsWith(PREFIX))
             .subscribe(event -> messageHandler.handle(event));
+        client.on(MemberUpdateEvent.class)
+            .filter(event -> event.getGuildId().equals(guild.getId()))
+            .subscribe(event -> updateHandler.process(event));
     }
 
     public void reload() {
         PREFIX = config.getString("discord.prefix", "!");
         registrationChannels = config.getStringList("discord.allow_registration_channels");
+
+        messageHandler = null;
+        updateHandler = null;
+
+        statusEnabled = config.getBoolean("botstatus.enabled");
+        statusType = config.getString("botstatus.type", "playing");
+        statusFormat = config.getString("botstatus.format");
     }
 
     public GatewayDiscordClient getClient() {

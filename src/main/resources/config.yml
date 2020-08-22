@@ -12,10 +12,14 @@ whitelist:
   enabled: true
   # The role IDs that users need to gain access
   roles: []
+  # The format of the not whitelisted message.
+  # Available placeholders: %player%
+  format: "You are not whitelisted"
 
 # Player count bot status
 botstatus:
   enabled: true
+  # Available placeholders: %current% %max_players%
   format: "%current%/%max_players%"
   type: "Watching"
 
