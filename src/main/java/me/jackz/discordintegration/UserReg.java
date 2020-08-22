@@ -8,6 +8,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.YamlConfiguration;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 public class UserReg {
@@ -18,7 +20,10 @@ public class UserReg {
     private Map<UUID, Snowflake> registeredUsers = new HashMap<>();
     private List<Snowflake> roleList = new ArrayList<>();
 
+    private final File USER_FILE;
+
     public UserReg(DiscordIntegration plugin) {
+        USER_FILE = new File(plugin.getDataFolder(), "users.yml");
         this.plugin = plugin;
         this.config = plugin.getConfig();
         this.bot = plugin.getDiscordBot();
@@ -29,10 +34,25 @@ public class UserReg {
         for (String roleID : config.getStringList("whitelist.roles")) {
             roleList.add(Snowflake.of(roleID));
         }
+        YamlConfiguration data = YamlConfiguration.loadConfiguration(USER_FILE);
+        for (String key : data.getKeys(false)) {
+            UUID uuid = Util.stringToUUID(key);
+            Snowflake discordUser = Snowflake.of(data.getString(key));
+            registeredUsers.put(uuid, discordUser);
+        }
+    }
+
+    public void save() throws IOException {
+        YamlConfiguration data = YamlConfiguration.loadConfiguration(USER_FILE);
+        for (Map.Entry<UUID, Snowflake> entry : registeredUsers.entrySet()) {
+            data.set(entry.getKey().toString(), entry.getValue().asString());
+        }
+        data.save(USER_FILE);
     }
 
     public void addUser(UUID uuid, Snowflake discordID) {
         registeredUsers.put(uuid, discordID);
+
     }
     public void addUser(UUID uuid, String discordID) {
         Snowflake snowflake = Snowflake.of(discordID);

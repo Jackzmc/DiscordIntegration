@@ -8,6 +8,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
+import java.io.IOException;
 
 public final class DiscordIntegration extends JavaPlugin {
     private DiscordIntegration plugin;
@@ -47,7 +48,14 @@ public final class DiscordIntegration extends JavaPlugin {
                 plugin.getLogger().warning("Exception during logout: " + ex.getMessage());
             }
         }
-        userReg = null;
+        if(userReg != null) {
+            try {
+                userReg.save();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            userReg = null;
+        }
     }
 
     @Override
