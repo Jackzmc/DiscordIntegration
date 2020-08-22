@@ -9,6 +9,7 @@ import discord4j.core.object.entity.Message;
 import jdk.nashorn.internal.runtime.regexp.RegExp;
 import me.jackz.discordintegration.DiscordIntegration;
 import me.jackz.discordintegration.UserReg;
+import me.jackz.discordintegration.Util;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -62,8 +63,9 @@ public class MessageHandler {
                 if(args.length > 0) {
                     //todo: get UUID from username.
                     try {
-                        UUID uuid = getUUID(args[0].trim());
+                        UUID uuid = Util.getUUID(args[0].trim());
                         if(uuid != null) {
+                            userReg.addUser(uuid, message.getAuthor().get().getId());
                             message.getChannel().block().createMessage("Registered " + args[0] + " for your discord account.").subscribe();
                         }else{
                             message.getChannel().block().createMessage("Could not find any users with that username.").subscribe();
@@ -80,30 +82,6 @@ public class MessageHandler {
         }
     }
 
-    private UUID getUUID(String name) throws ParseException {
-        try {
-            URL url = new URL("https://api.mojang.com/users/profiles/minecraft/" + name);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            connection.connect();
-            int statusCode = connection.getResponseCode();
-            if(statusCode == 200) {
-                JSONParser parser = new JSONParser();
-                try (Reader reader = new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8)){
-                    JSONObject root = (JSONObject) parser.parse(reader);
-                    String idString = root.get("id").toString();
-                    if(idString != null) {
-                        return UUID.fromString(idString.replaceFirst("(\\p{XDigit}{8})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}+)", "$1-$2-$3-$4-$5"));
-                    }else{
-                        return null;
-                    }
-                }
-            }else if(statusCode == 204) return null;
-            else throw new HTTPException(statusCode);
-        }
-        catch (java.io.IOException e1) {
-            return null;
-        }
-    }
+
 
 }
