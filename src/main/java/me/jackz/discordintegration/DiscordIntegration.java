@@ -1,6 +1,8 @@
 package me.jackz.discordintegration;
 
+import discord4j.core.GatewayDiscordClient;
 import me.jackz.discordintegration.discord.Bot;
+import me.jackz.discordintegration.events.PlayerJoin;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -13,6 +15,7 @@ public final class DiscordIntegration extends JavaPlugin {
     private final File configFile = new File(getDataFolder(), "config.yml");
 
     private Bot bot;
+    private UserReg userReg;
 
     @Override
     public void onEnable() {
@@ -25,7 +28,10 @@ public final class DiscordIntegration extends JavaPlugin {
         config = YamlConfiguration.loadConfiguration(configFile);
         plugin = this;
 
+        userReg = new UserReg(plugin);
         bot = new Bot(plugin);
+
+        this.getServer().getPluginManager().registerEvents(new PlayerJoin(this), this);
     }
 
     @Override
@@ -41,6 +47,7 @@ public final class DiscordIntegration extends JavaPlugin {
                 plugin.getLogger().warning("Exception during logout: " + ex.getMessage());
             }
         }
+        userReg = null;
     }
 
     @Override
@@ -50,5 +57,12 @@ public final class DiscordIntegration extends JavaPlugin {
 
     public Plugin getInstance() {
         return plugin;
+    }
+
+    public UserReg getUserReg() {
+        return userReg;
+    }
+    public Bot getDiscordBot() {
+        return bot;
     }
 }

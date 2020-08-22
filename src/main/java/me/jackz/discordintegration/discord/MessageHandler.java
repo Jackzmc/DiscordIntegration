@@ -15,19 +15,19 @@ public class MessageHandler {
     private final DiscordIntegration plugin;
     private final GatewayDiscordClient client;
     private YamlConfiguration config;
+    private Bot bot;
 
-    private List<String> registrationChannels = new ArrayList<>();
 
-    public MessageHandler(DiscordIntegration plugin, GatewayDiscordClient client) {
+    public MessageHandler(DiscordIntegration plugin, Bot bot) {
         this.plugin = plugin;
-        this.client = client;
+        this.client = bot.getClient();
         this.config = plugin.getConfig();
-        reload();
+        this.bot = bot;
     }
     public void handle(Message message) {
         String content = message.getContent();
         String channelID = message.getChannelId().asString();
-        if(registrationChannels.contains(channelID)) {
+        if(bot.getRegistrationChannels().contains(channelID)) {
             String[] arguments = content.split("\\s");
             if(arguments.length > 0) {
                 String command = arguments[0].substring(1);
@@ -38,14 +38,12 @@ public class MessageHandler {
         }
     }
     private void processCommand(Message message, String command, String[] args) {
-        plugin.getLogger().info("command=" + command + "|args=" + Arrays.toString(args) + "|chn=" + message.getChannelId().asString());
         switch(command.toLowerCase()) {
             case "register": {
                 if(args.length > 0) {
                     //todo: register user
                     message.getChannel().block().createMessage("Registered " + args[0] + " for your discord account.").subscribe();
                 }else{
-
                     message.getChannel().block().createMessage("Please enter in your minecraft username.").subscribe();
                 }
                 break;
@@ -53,7 +51,4 @@ public class MessageHandler {
         }
     }
 
-    public void reload() {
-        registrationChannels = config.getStringList("discord.allow_registration_channels");
-    }
 }

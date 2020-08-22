@@ -1,7 +1,7 @@
 discord:
   # Get the bot token from https://discord.com/developers
   bot_token:
-  # List of channel IDs that can be used to register
+  # List of channel IDs that can be used to register. The guild ID of the first channel will be used to check roles.
   allow_registration_channels: []
   # Bot's prefix
   prefix: !
